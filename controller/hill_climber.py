@@ -2,7 +2,7 @@ import random
 from swarmy.actuation import Actuation
 import yaml
 import math
-
+from evolution.evolution import Evolution
 class HillClimber(Actuation):
     def __init__(self, agent, config):
         super().__init__(agent)
@@ -16,24 +16,26 @@ class HillClimber(Actuation):
             self.agent.initial_position()
             self.init_pos = False
 
+        max_speed = 2
+        max_angle = 50
         # Get sensor data
         sensor_id, sensor_values = self.agent.get_perception()
-        sensor_l, sensor_r, sensor_m = sensor_values
-
+        #sensor_l, sensor_r, sensor_m = sensor_values
+        sensor_l, sensor_r, sensor_m = [value / 1 for value in sensor_values]
         # Calculate wheel speeds based on the control parameters
         vl = self.control_params[0]*sensor_l + self.control_params[1]
         vr = self.control_params[2]*sensor_r + self.control_params[3] + self.control_params[4]*sensor_m + self.control_params[5]
 
         # Calculate new linear and angular velocities
-        self.linear_velocity = (vl + vr) / 2
-        self.angle_velocity = -(vr - vl) / 3
-        print(self.angle_velocity*10)
+        self.linear_velocity = min(abs((vl + vr) / 2),max_speed)#take the smaller speed
+        self.angle_velocity = min((vr - vl) /5,max_angle)#take the smaller angle
+        
         # Update the position
         self.update_position(self.linear_velocity, self.angle_velocity)
 
         # Calculate the fitness
-        fitness = self.calculate_fitness()
-
+        fitness = Evolution.calculate_fitness(self.agent)
+        print(fitness)
         # If the fitness has improved, keep the control parameters. Otherwise, revert to the previous control parameters.
         if fitness > self.best_fitness:
             self.best_fitness = fitness
@@ -42,7 +44,7 @@ class HillClimber(Actuation):
 
         # Mutate the control parameters to create a new candidate
         self.previous_control_params = self.control_params
-        self.control_params = [param + random.uniform(-0.1, 0.1) for param in self.control_params]
+        self.control_params = [param + random.uniform(-0.2, 0.2) for param in self.control_params]
 
     def update_position(self, speed, turn_angle):
         # Get current position and heading
@@ -59,10 +61,6 @@ class HillClimber(Actuation):
         new_heading = int(     (heading + turn_angle) % 360 )
         # Set new position and heading
         self.agent.set_position(new_x, new_y, new_heading)
-
-    def calculate_fitness(self):
-        # Implement your fitness calculation here. This is just a placeholder.
-        return len(set(self.agent.trajectory))  # Fitness is the number of unique positions visited
 
     def torus(self):
         # Get current robot position and heading

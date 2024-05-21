@@ -1,18 +1,16 @@
 from swarmy.agent import Agent
 import random
 import pygame
-
+from evolution.evolution import Evolution
 class MyAgent(Agent):
-    def __init__(self,environment,controller, sensor, config):
-        super().__init__(environment,controller, sensor, config)
+    def __init__(self, environment, controller, sensor, config):
+        super().__init__(environment, controller, sensor, config)
 
         self.environment = environment
         self.trajectory = []
         self.eval_params = []
         self.current_generation = 0
-        self.wheel_distance = 0 
-
-
+        self.visited_grid_cells = set() 
 
     def initial_position(self):
         """

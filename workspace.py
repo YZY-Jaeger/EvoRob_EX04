@@ -41,7 +41,6 @@ agent_sensing = [ProximitySensor]
 
 
 
-evolution = Evolution(config, MyAgent, My_environment)
 
 exp = Experiment(config, agent_controller, agent_sensing, My_environment, MyAgent)
 exp.init_robots()
